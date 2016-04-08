@@ -80,7 +80,7 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        checkCollisions(allEnemies, player);
+        checkCollisions(allEnemies, player, allGems);
     }
 
     /* This is called by the update function and loops through all of the
@@ -91,9 +91,13 @@ var Engine = (function(global) {
      * render methods.
      */
     function updateEntities(dt) {
+      allGems.forEach(function(gem) {
+          gem.update(dt);
+      });
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
+
         player.update();
     }
 
@@ -152,10 +156,12 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
+       allGems.forEach(function(gem) {
+           gem.render();
+       });
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
-
         player.render();
     }
 
@@ -177,7 +183,11 @@ var Engine = (function(global) {
         'images/grass-block.png',
         'images/enemy-bug.png',
         'images/enemy-bug-left.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/gem-blue.png',
+        'images/gem-green.png',
+        'images/gem-orange.png',
+
     ]);
     Resources.onReady(init);
 
@@ -186,4 +196,5 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+
 })(this);
