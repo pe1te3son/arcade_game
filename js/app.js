@@ -7,7 +7,8 @@
 var game_set = {
   "object_body": 100,
   "c_width": 707,
-  "c_height": 1120
+  "c_height": 1120,
+  "lives": 3
 };
 
 //basic settings for game
@@ -79,8 +80,11 @@ Enemy.prototype.render = function() {
 //// Player
 //////////
 var Player = function(x, y) {
+
   this.x = x;
   this.y = y;
+  this.win = false;
+  this.gm = false; // game over
   this.sprite = 'images/char-boy.png';
 };
 
@@ -103,19 +107,24 @@ Player.prototype.update = function() {
 
 
 Player.prototype.handleInput = function(key) {
-  switch (key) {
-    case "up":
-        this.y = this.y - player_set.step;
-        break;
-    case "down":
-        this.y = this.y + player_set.step;
-        break;
-    case "left":
-        this.x = this.x - player_set.step;
-        break;
-    case "right":
-        this.x = this.x + player_set.step;
-        break;
+  if(this.win === true || this.gm === true){
+      //win or gm screen
+
+  }else{
+    switch (key) {
+      case "up":
+          this.y = this.y - player_set.step;
+          break;
+      case "down":
+          this.y = this.y + player_set.step;
+          break;
+      case "left":
+          this.x = this.x - player_set.step;
+          break;
+      case "right":
+          this.x = this.x + player_set.step;
+          break;
+    }
   }
 };
 
@@ -142,13 +151,55 @@ Gem.prototype.render = function() {
 
 Gem.prototype.update = function(dt){
   if(this.run === true){
-    this.x = this.x + 550 *dt;
+    this.x = (this.x + 30) + 550 *dt;
   }
 };
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
+
+///////////
+//// Scores
+//////////
+var Score = function(x, y){
+  this.x = x;
+  this.y = y;
+  this.sprite = "images/Heart.png";
+}
+
+Score.prototype.render = function(){
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y, 20, 20);
+};
+
+Score.prototype.update = function(){
+
+};
+
+var ScoreGems = function(x, y, sprite){
+  this.x = x;
+  this.y = y;
+  this.sprite = sprite;
+}
+
+ScoreGems.prototype = Object.create(Score.prototype);
+//////////
+//// Player settings
+/////////
 var player = new Player(player_set.default_x, player_set.default_y);
+
+// This listens for key presses and sends the keys to your
+// Player.handleInput() method. You don't need to modify this.
+document.addEventListener('keyup', function(e) {
+  var allowedKeys = {
+      37: 'left',
+      38: 'up',
+      39: 'right',
+      40: 'down'
+  };
+
+  player.handleInput(allowedKeys[e.keyCode]);
+});
+
+//////////
+//// Enemies settings
+/////////
 
 //all rows y coordinates allowed for enemy to spawn at
 var rowArray = [200, 285, 370, 620 ,700, 780];
@@ -166,6 +217,9 @@ for(var row = 0; row < rowArray.length; row++){
   }
 }
 
+//////////
+//// Gems settings
+/////////
 var allGems = [];
 //gem locations
 var gemLinks = ["images/gem-blue.png", "images/gem-green.png", "images/gem-orange.png"];
@@ -177,7 +231,7 @@ var gml = [
   [250, 700],
   [100, 800],
   [550, 800],
-  [550, 400]
+  [550, 350]
 ];
 
 //creates gems on the map, randomly chooses images from gemLinks
@@ -186,36 +240,51 @@ for(var gem = 0;gem < gml.length; gem++){
   allGems.push(new Gem(gemLinks[randomGem], gml[gem][0], gml[gem][1]));
 }
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
-  var allowedKeys = {
-      37: 'left',
-      38: 'up',
-      39: 'right',
-      40: 'down'
-  };
+//////////
+//// Lives and scores settings
+/////////
 
-  player.handleInput(allowedKeys[e.keyCode]);
-});
+var allScore = [];
 
+//score position
+var sp = 20;
+
+//generates lives, set in basic games settins
+for(var i=0; i < game_set.lives; i++ ){
+  allScore.push(new Score(sp ,60));
+  sp += 20;
+}
 
 /////////////
 //// Functions
 ////////////
 
 //everytime runs it checks for each enemy postion relative to player position and resets player to default starting position
+
+//score postion gem
+var spGem = 450; //keeps track of picked gems increses by 40 everytime to position picked gems correctly on screen
 function checkCollisions(enemies, player, gems){
+
   enemies.forEach(function(enemy){
+    //keeps track of player and enemy colisions
     /////left///////////////////////////right//////////////////////////down////////////////////up/////////////
     if(enemy.x > player.x -25 && enemy.x < player.x + 25 && enemy.y > player.y -20 && enemy.y < player.y + 70){
       player.x = player_set.default_x;
       player.y = player_set.default_y;
+      allScore.shift();
+      game_set.lives -= 1;
+      //checks if game over
+      //calls reset to display game over screen
+      if(game_set.lives === 0){
+        player.gm = true;
+      }
     }
   });
   gems.forEach(function(gem){
     if(gem.x > player.x -25 && gem.x < player.x + 25 && gem.y > player.y -20 && gem.y < player.y + 70){
       gem.run = true;
+      allScore.push(new ScoreGems( spGem ,60, gem.sprite));
+      spGem += 25;
       };
   });
 }
@@ -236,15 +305,16 @@ function xEposition(){
   return x;
 }
 
-//if player in water resets to default location
+//if player is in the water, resets player to default location
 //param: array with sets of coordinates
 function waterCheck(array){
   for(var i=0; i<array.length; i++){
     if(player.y > array[i][0] && player.y < array[i][1] ){
-      setTimeout(function(){
+
         player.x = player_set.default_x;
         player.y = player_set.default_y;
-      }, 500);
+        allScore.shift();
+        game_set.lives -= 1;
     }
   }
 }
