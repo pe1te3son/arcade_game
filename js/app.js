@@ -80,9 +80,9 @@ Enemy.prototype.render = function() {
 //// Player
 //////////
 var Player = function(x, y) {
-
   this.x = x;
   this.y = y;
+  this.stop = false;
   this.win = false;
   this.gm = false; // game over
   this.sprite = 'images/char-boy.png';
@@ -102,15 +102,12 @@ Player.prototype.update = function() {
   }else if(this.y < +25){
     this.y = this.y + player_set.step;
   }
-  waterCheck(water);
 };
 
 
 Player.prototype.handleInput = function(key) {
-  if(this.win === true || this.gm === true){
-      //win or gm screen
+  if(this.stop === false){
 
-  }else{
     switch (key) {
       case "up":
           this.y = this.y - player_set.step;
@@ -139,12 +136,6 @@ var Gem = function(image, x, y){
   this.run = false;
 };
 
-// Gem.prototype.gemDisplay = function(){
-//   this.x = Math.floor(Math.random() * game_set.c_height -200 + 100);
-//   this.y = Math.floor(Math.random() * game_set.c_width -100 + 1);
-//
-// };
-
 Gem.prototype.render = function() {
   ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
@@ -158,10 +149,10 @@ Gem.prototype.update = function(dt){
 ///////////
 //// Scores
 //////////
-var Score = function(x, y){
+var Score = function(x, y, sprite){
   this.x = x;
   this.y = y;
-  this.sprite = "images/Heart.png";
+  this.sprite = sprite;
 }
 
 Score.prototype.render = function(){
@@ -177,8 +168,8 @@ var ScoreGems = function(x, y, sprite){
   this.y = y;
   this.sprite = sprite;
 }
-
 ScoreGems.prototype = Object.create(Score.prototype);
+
 //////////
 //// Player settings
 /////////
@@ -222,7 +213,7 @@ for(var row = 0; row < rowArray.length; row++){
 /////////
 var allGems = [];
 //gem locations
-var gemLinks = ["images/gem-blue.png", "images/gem-green.png", "images/gem-orange.png"];
+var gemLinks = ["images/gem-red.png", "images/gem-green.png", "images/gem-orange.png"];
 
 //gem locations
 var gml = [
@@ -243,15 +234,15 @@ for(var gem = 0;gem < gml.length; gem++){
 //////////
 //// Lives and scores settings
 /////////
-
+var points = 0;
 var allScore = [];
 
 //score position
 var sp = 20;
 
-//generates lives, set in basic games settins
+//generates lives, it is set in basic games settings
 for(var i=0; i < game_set.lives; i++ ){
-  allScore.push(new Score(sp ,60));
+  allScore.push(new Score(sp ,60, "images/Heart.png"));
   sp += 20;
 }
 
@@ -284,6 +275,8 @@ function checkCollisions(enemies, player, gems){
     if(gem.x > player.x -25 && gem.x < player.x + 25 && gem.y > player.y -20 && gem.y < player.y + 70){
       gem.run = true;
       allScore.push(new ScoreGems( spGem ,60, gem.sprite));
+      //counts picked gems
+      points++;
       spGem += 25;
       };
   });
@@ -307,7 +300,7 @@ function xEposition(){
 
 //if player is in the water, resets player to default location
 //param: array with sets of coordinates
-function waterCheck(array){
+function waterCheck(array, player){
   for(var i=0; i<array.length; i++){
     if(player.y > array[i][0] && player.y < array[i][1] ){
 
@@ -316,5 +309,13 @@ function waterCheck(array){
         allScore.shift();
         game_set.lives -= 1;
     }
+  }
+}
+
+function hasWon(){
+  //if picked gems = gems on the map
+  if(points === gml.length){
+    player.win = true;
+    console.log('win');
   }
 }

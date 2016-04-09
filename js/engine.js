@@ -47,7 +47,7 @@ var Engine = (function(global) {
          */
         update(dt);
         render();
-
+        hasWon();
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
          */
@@ -67,6 +67,7 @@ var Engine = (function(global) {
         reset();
         lastTime = Date.now();
         main();
+
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -81,6 +82,8 @@ var Engine = (function(global) {
     function update(dt) {
         updateEntities(dt);
         checkCollisions(allEnemies, player, allGems);
+        waterCheck(water, player);
+        reset();
     }
 
     /* This is called by the update function and loops through all of the
@@ -173,7 +176,13 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+
+      if(player.gm === true ){
+        console.log('working');
+        player.gm = false;
+        player.stop = true;
+      }
+
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -187,7 +196,7 @@ var Engine = (function(global) {
         'images/enemy-bug.png',
         'images/enemy-bug-left.png',
         'images/char-boy.png',
-        'images/gem-blue.png',
+        'images/gem-red.png',
         'images/gem-green.png',
         'images/gem-orange.png',
         'images/Heart.png',
