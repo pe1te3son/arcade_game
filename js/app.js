@@ -5,13 +5,11 @@
 //  c_width = canvas width, if changing u must update canvas size and columns in engine.js
 //  c_height = canvas height, if changing u must update canvas size and rows in engine.js
 // lives = each players lives, evety time gets hit by enemy -1
-// reset = id of reset screen
 var game_set = {
   "object_body": 100,
   "c_width": 707,
   "c_height": 1010,
-  "lives": 3,
-  "reset": "#reset"
+  "lives": 3
 };
 
 //basic settings for game
@@ -28,20 +26,32 @@ var water =  [[0, 140],[815, 1100]];
 //// Enemy
 //////////
 
+var GameObject = function(x, y){
+  this.x = x;
+  this.y = y;
+};
+
+GameObject.prototype.render = function() {
+  ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+};
+
 // Enemies our player must avoid
 var Enemy = function(x, y) {
   // Variables applied to each of our instances go here,
   // we've provided one for you to get started
-  this.x = x;
-  this.y = y;
   this.speed = Math.floor(Math.random() * 200 + 100);
-  this.direction = randomDirection();
+  this.direction = this.randomDirection();
   // The image/sprite for our enemies, this uses
   // a helper we've provided to easily load images
   this.sprite = 'images/enemy-bug.png';
+  GameObject.call(this, x, y);
+
 };
 
 // Update the enemy's position, required method for game
+//calls render
+Enemy.prototype = Object.create(GameObject.prototype);
+
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
   // You should multiply any movement by the dt parameter
@@ -55,7 +65,7 @@ Enemy.prototype.update = function(dt) {
 
       this.x = -150;
       this.speed = Math.floor(Math.random() * 200 + 100);
-      this.direction = randomDirection();
+      this.direction = this.randomDirection();
     }
   }
   if(this.direction === "left"){
@@ -65,14 +75,22 @@ Enemy.prototype.update = function(dt) {
     }else {
       this.x = game_set.c_width+150;
       this.speed = Math.floor(Math.random() * 200 + 100);
-      this.direction = randomDirection();
+      this.direction = this.randomDirection();
     }
   }
 };
 
 // Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
-  ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+
+
+//tells enemy which direction to take
+Enemy.prototype.randomDirection = function(){
+  var direction = Math.floor(Math.random()*2 + 1);
+  if(direction === 1){
+    return "right";
+  }else{
+    return "left";
+  }
 };
 
 // Now write your own player class
@@ -83,17 +101,15 @@ Enemy.prototype.render = function() {
 //// Player
 //////////
 var Player = function(x, y) {
-  this.x = x;
-  this.y = y;
   this.stop = false;
   this.win = false;
   this.gm = false; // game over
   this.sprite = 'images/char-boy.png';
+  GameObject.call(this, x, y);
 };
 
-Player.prototype.render = function() {
-  ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
+//calls mainly render functions, as it is the same
+Player.prototype = Object.create(GameObject.prototype);
 
 Player.prototype.update = function() {
   if(this.x > game_set.c_width-80){
@@ -127,20 +143,20 @@ Player.prototype.handleInput = function(key) {
   }
 };
 
+
+
 ///////////
 //// Collectibles
 //////////
 
 var Gem = function(image, x, y){
   this.sprite = image;
-  this.x = x;
-  this.y = y;
   this.run = false;
+  GameObject.call(this, x, y);
 };
 
-Gem.prototype.render = function() {
-  ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
+//calls superclass, mainly for render function
+Gem.prototype = Object.create(GameObject.prototype);
 
 Gem.prototype.update = function(dt){
   if(this.run === true){
@@ -152,9 +168,8 @@ Gem.prototype.update = function(dt){
 //// Scores
 //////////
 var Score = function(x, y, sprite){
-  this.x = x;
-  this.y = y;
   this.sprite = sprite;
+  GameObject.call(this, x, y);
 };
 
 Score.prototype.render = function(){
@@ -163,9 +178,8 @@ Score.prototype.render = function(){
 
 //this class creates gems player has to pick up to win
 var ScoreGems = function(x, y, sprite){
-  this.x = x;
-  this.y = y;
   this.sprite = sprite;
+  GameObject.call(this, x, y);
 };
 
 ScoreGems.prototype = Object.create(Score.prototype);
@@ -257,11 +271,15 @@ for(var i=0; i < game_set.lives; i++ ){
 //score postion gem
 var spGem = 450; //keeps track of picked gems increses by 40 everytime to position picked gems correctly on screen
 function checkCollisions(enemies, player, gems){
+  var playerAbove = player.y + 70; //above enemy or gem
+  var playerBellow = player.y - 40; //bellow enemy or gem
+  var playerRight = player.x + 30; //on the right of enemy or gem
+  var playerLeft = player.x - 30; //on the left of enemy or gem
 
   enemies.forEach(function(enemy){
     //keeps track of player and enemy colisions
-    /////left///////////////////////////right//////////////////////////down////////////////////up/////////////
-    if(enemy.x > player.x -25 && enemy.x < player.x + 25 && enemy.y > player.y -20 && enemy.y < player.y + 70){
+
+    if(enemy.x > playerLeft && enemy.x < playerRight && enemy.y > playerBellow && enemy.y < playerAbove){
       player.x = player_set.default_x;
       player.y = player_set.default_y;
       allScore.shift();
@@ -274,7 +292,7 @@ function checkCollisions(enemies, player, gems){
     }
   });
   gems.forEach(function(gem){
-    if(gem.x > player.x -25 && gem.x < player.x + 25 && gem.y > player.y -20 && gem.y < player.y + 70){
+    if(gem.x > playerLeft && gem.x < playerRight && gem.y > playerBellow && gem.y < playerAbove){
       gem.run = true;
       allScore.push(new ScoreGems( spGem ,60, gem.sprite));
       //counts picked gems
@@ -282,16 +300,6 @@ function checkCollisions(enemies, player, gems){
       spGem += 25;
       }
   });
-}
-
-//tells enemy which direction to take
-function randomDirection(){
-  var direction = Math.floor(Math.random()*2 + 1);
-  if(direction === 1){
-    return "right";
-  }else{
-    return "left";
-  }
 }
 
 //sets randomly  x coordinates for each enemy
