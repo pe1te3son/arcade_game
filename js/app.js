@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 //basic settings for game
 //  object_body = each object with and height
@@ -155,7 +155,7 @@ var Score = function(x, y, sprite){
   this.x = x;
   this.y = y;
   this.sprite = sprite;
-}
+};
 
 Score.prototype.render = function(){
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y, 20, 20);
@@ -166,7 +166,8 @@ var ScoreGems = function(x, y, sprite){
   this.x = x;
   this.y = y;
   this.sprite = sprite;
-}
+};
+
 ScoreGems.prototype = Object.create(Score.prototype);
 
 //////////
@@ -279,7 +280,7 @@ function checkCollisions(enemies, player, gems){
       //counts picked gems
       points++;
       spGem += 25;
-      };
+      }
   });
 }
 
