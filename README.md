@@ -16,7 +16,7 @@ Bugs come in to the map randomly so be careful when picking a gem.
 ##### Good luck!
 ===============================
 
-_This game was created as port of the Udacity project_
+_This game was created as part of the Udacity project_
 
 ****
 
