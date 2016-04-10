@@ -2,8 +2,8 @@
 
 An html5 game inspired by "frogger".
 
-### Game insruction
-* To start: game double clisk run.html _(no instalition required)_.
+### Game instruction
+* To start: game double click index.html _(no instlation required)_.
 * To quit: close browser window
 
 Main purpose of the game is to collect all gems without colliding with fast moving bugs.
