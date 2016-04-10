@@ -4,11 +4,14 @@
 //  object_body = each object with and height
 //  c_width = canvas width, if changing u must update canvas size and columns in engine.js
 //  c_height = canvas height, if changing u must update canvas size and rows in engine.js
+// lives = each players lives, evety time gets hit by enemy -1
+// reset = id of reset screen
 var game_set = {
   "object_body": 100,
   "c_width": 707,
-  "c_height": 1120,
-  "lives": 3
+  "c_height": 1010,
+  "lives": 3,
+  "reset": "#reset"
 };
 
 //basic settings for game
@@ -97,13 +100,12 @@ Player.prototype.update = function() {
     this.x = this.x - player_set.step;
   }else if(this.x < -25) {
     this.x = this.x + player_set.step;
-  }else if(this.y > game_set.c_height - 250){
+  }else if(this.y > game_set.c_height - 150){
     this.y = this.y - player_set.step;
   }else if(this.y < +25){
     this.y = this.y + player_set.step;
   }
 };
-
 
 Player.prototype.handleInput = function(key) {
   if(this.stop === false){
@@ -159,10 +161,7 @@ Score.prototype.render = function(){
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y, 20, 20);
 };
 
-Score.prototype.update = function(){
-
-};
-
+//this class creates gems player has to pick up to win
 var ScoreGems = function(x, y, sprite){
   this.x = x;
   this.y = y;
@@ -251,7 +250,9 @@ for(var i=0; i < game_set.lives; i++ ){
 ////////////
 
 //everytime runs it checks for each enemy postion relative to player position and resets player to default starting position
-
+//@param: enemies
+//@param: player
+//@param: gems
 //score postion gem
 var spGem = 450; //keeps track of picked gems increses by 40 everytime to position picked gems correctly on screen
 function checkCollisions(enemies, player, gems){
@@ -312,10 +313,14 @@ function waterCheck(array, player){
   }
 }
 
-function hasWon(){
+//if players picked all gems neccesery to win
+function hasWon(player){
   //if picked gems = gems on the map
   if(points === gml.length){
     player.win = true;
+    player.x = player_set.default_x;
+    player.y = player_set.default_y;
+    player.stop = true;
     console.log('win');
   }
 }

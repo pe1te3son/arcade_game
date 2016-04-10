@@ -26,7 +26,7 @@ var Engine = (function(global) {
         lastTime;
 
     canvas.width = 707;
-    canvas.height = 1120;
+    canvas.height = 1010;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -47,7 +47,7 @@ var Engine = (function(global) {
          */
         update(dt);
         render();
-        hasWon();
+        hasWon(player);
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
          */
@@ -178,8 +178,16 @@ var Engine = (function(global) {
     function reset() {
 
       if(player.gm === true ){
-        console.log('working');
+        var message = document.getElementById('message').innerHTML = "Game Over!";
+        var reset = document.getElementById("reset");
+        reset.style.display = 'block';
         player.gm = false;
+        player.stop = true;
+      }else if(player.win === true){
+        var message = document.getElementById('message').innerHTML = "You won!";
+        var reset = document.getElementById("reset");
+        reset.style.display = 'block';
+        player.win = false;
         player.stop = true;
       }
 
