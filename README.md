@@ -1,6 +1,8 @@
 ## Arcade game
 
-An html5 game inspired by "frogger".
+An HTML5 Canvas powered game, developed using the best practices in Object Oriented JavaScript. Inspired by classic arcade game "frogger".
+
+[Play online](https://pe1te3son.github.io/arcade-game/)
 
 ### Game instruction
 * To start: game double click index.html _(no installation required)_.
